@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  throttle:
+    build:
+      dockerfile: .docker/app.Dockerfile
+      context: ./
+    environment:
+      HTTP_BIND: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password123
+    volumes:
+      - ./:/app/throttle:delegated
+      - ./.docker/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    networks:
+      - throttle
+
+  redis:
+    image: bitnami/redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=password123
+    networks:
+      - throttle
+
+volumes:
+  data:
+
+networks:
+  throttle:
